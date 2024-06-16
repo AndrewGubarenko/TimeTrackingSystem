@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Add Task</title>
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+        <!-- jQuery UI -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <!-- Bootstrap -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        
+        <script>
+            $(document).ready(function() {
+                $('.datepicker').datepicker({
+                    dateFormat: 'yy-mm-dd' 
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <div class="column p-5">
+            <h1>Add Task for {{ project.name }}</h1>
+            <form method="post" class="d-flex flex-column pb-5">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-2">
+                        {{ form.as_p }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <button class="btn btn-dark" type="submit">Add Task</button>
+                    </div>
+                </div>
+            </form>
+            <div>
+                <a class="text-danger" href="{% url 'project_detail' project.slug %}"><b>Back to {{ project.name }} without saving</b></a>
+            </div>
+        </div>
+    </body>
+</html>

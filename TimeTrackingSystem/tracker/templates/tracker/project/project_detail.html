@@ -1,0 +1,82 @@
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <!-- jQuery -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <!-- Bootstrap-->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+        
+        <title>{{ project.name }} Details</title>
+
+        <script>
+            function confirmDelete(event, entity) {
+                event.preventDefault();
+                if (confirm(`Are you sure you want to delete this ${entity}?`)) {
+                    event.target.submit();
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <header class="container pt-5">
+            <nav class="container d-flex flex-row justify-content-end align-items-center">
+                <div>
+                    <a class="mr-5" href="/projects">Projects</a>
+                </div>
+                {% if request.user.is_authenticated and request.user|is_in_group:"manager" %}
+                    <div class="mr-5 primary"><a href="/create_project">Create New Project</a></div>
+                    <div class="mr-5"><a href="/users">Users</a></div>
+                {% endif %}
+                <div>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-warning" type="submit">Log Out</button>
+                    </form>
+                </div>
+
+                <div class="pl-5 text-center">
+                    {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}" class="img-fluid rounded-circle mb-2" alt="loaded_avatar"  style="width: 60px;">
+                    {% else %}
+                        <img src="/media/avatars/default_avatar.png" class="img-fluid rounded-circle mb-2" alt="default_avatar" style="width: 60px;">
+                    {% endif %}
+                </div>
+            </nav>
+        </header>
+
+        <div class="container">
+            <div class="d-flex flex-row align-items-end">
+                <h1>{{ project.name }}</h1>
+                <a class="pl-2" href="{% url 'edit_project' project.slug %}">Edit</a>
+                <form class="d-inline pl-2" method="post" action="{% url 'delete_project' slug=project.slug %}" onsubmit="return confirmDelete(event, 'project');">
+                    {% csrf_token %}
+                    <button type="submit" class="text-danger p-0 border-0 bg-transparent">Delete</button>
+                </form>
+            </div>
+
+            <div class="pt-5">
+                <span><b>Description: </b></span>
+                {{ project.description }}
+            </div>
+
+            <div class="pt-5 d-flex flex-row align-items-center">
+                <h6>SLUG: <b class="text-danger">{{ project.slug }}</b></h6>
+            </div>
+        
+            <h2 class="pt-5">Tasks</h2>
+
+            <ul>
+                {% for task in tasks %}
+                    <li><a href="{% url 'task_detail' task.id %}">{{ task.title }}</a></li>
+                {% endfor %}
+            </ul>
+
+            {% if request.user|is_in_group:"manager" %}
+                <a href="{% url 'add_task' project.slug %}">Add Task</a>
+            {% endif %}
+        </div>
+    </body>
+</html>

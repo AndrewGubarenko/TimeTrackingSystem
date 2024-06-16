@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Edit Project - {{ project.name }}</title>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1>Edit Project - {{ project.name }}</h1>
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-2">
+                        {{ form.as_p }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+            </form>
+            <div class="pt-5">
+                <a class="text-danger" href="{% url 'project_detail' project.slug %}"><b>Back to {{ project.name }} without saving</b></a>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,200 @@
+{% load custom_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <!-- Bootstrap-->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>Task Detail</title>
+
+    <script>
+        function confirmDelete(event, elementType) {
+            event.preventDefault();
+            const form = event.target;
+            let confirmationMessage = '';
+            if (elementType === 'comment') {
+                confirmationMessage = 'Are you sure you want to delete this comment?';
+            } else if (elementType === 'time_log') {
+                confirmationMessage = 'Are you sure you want to delete this time log?';
+            } else if (elementType === 'task') {
+                confirmationMessage = 'Are you sure you want to delete this task?';
+            }
+            
+            if (confirm(confirmationMessage)) {
+                form.submit();
+            }
+        }
+    </script>
+</head>
+    <body class="pb-5">
+
+        <header class="container pt-5">
+            <nav class="container d-flex flex-row justify-content-end align-items-center">
+                <div>
+                    <a class="mr-5" href="/projects">Projects</a>
+                </div>
+                <div>
+                    <a class="mr-5" href="{% url 'project_detail' project_slug %}">Tasks</a>
+                </div>
+                {% if request.user.is_authenticated and request.user|is_in_group:"manager" %}
+                    <div class="mr-5"><a href="{% url 'create_project' %}">Create New Project</a></div>
+                    <div class="mr-5"><a href="/users">Users</a></div>
+                {% endif %}
+                <div>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button class="btn btn-outline-warning" type="submit">Log Out</button>
+                    </form>
+                </div>
+
+                <div class="pl-5 text-center">
+                    {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}" class="img-fluid rounded-circle mb-2" alt="loaded_avatar"  style="width: 60px;">
+                    {% else %}
+                        <img src="/media/avatars/default_avatar.png" class="img-fluid rounded-circle mb-2" alt="default_avatar" style="width: 60px;">
+                    {% endif %}
+                </div>
+            </nav>
+        </header>
+        
+        <div class="container pt-5">
+            
+            <div class="d-flex flex-row align-items-start">
+                <h1>{{ task.title }}</h1>
+                <a class="pl-2" href="{% url 'edit_task' slug=task.project.slug task_id=task.id %}">Edit</a>
+                <form class="d-inline pl-2" method="post" action="{% url 'delete_task' slug=task.project.slug task_id=task.id %}" onsubmit="return confirmDelete(event, 'task');">
+                    {% csrf_token %}
+                    <button type="submit" class="text-danger p-0 border-0 bg-transparent">Delete</button>
+                </form>
+            </div>
+
+            <div class="row">
+                <div class="col-2">
+                    <p>Description: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.description }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Start date: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.start_date }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>End date: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.end_date }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Type: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.task_type }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Priority: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.priority }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Estimated time: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.estimated_hours }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Project name: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.project }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Executor: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.executor }}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-2">
+                    <p>Author: </p>
+                </div>
+                <div class="col">
+                    <p>{{ task.author }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="container pt-5">
+            <div class="row">
+                <div class="column pr-5">
+                    <h2>Comments</h2>
+                    {% if comments %}
+                        <ul>
+                            {% for comment in comments %}
+                                <li>
+                                    {{ comment.text }} |
+                                    {% if comment.user.id == request.user.id %}
+                                        <a href="{% url 'edit_comment' comment.id %}">Edit</a>
+                                        <form method="post" action="{% url 'delete_comment' task.id comment.id %}" class="d-inline" onsubmit="confirmDelete(event, 'comment');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="text-danger p-0 border-0 bg-transparent">Delete</button>
+                                        </form>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-danger">No comments available.</p>
+                    {% endif %}
+                    <a href="{% url 'add_comment' task.id %}">Add a Comment</a>
+                </div>
+                <div class="column pl-5">
+                    <h2>Time Logs</h2>
+                    {% if time_logs %}
+                        <ul>
+                            {% for time_log in time_logs %}
+                                <li>
+                                    <b>{{ time_log.hours_spent }}  hours spent. </b>
+                                    <span>Comment: {{ time_log.comment }}</span> |
+                                    {% if time_log.user.id == request.user.id %}
+                                        <a href="{% url 'edit_time_log' task.id time_log.id %}">Edit</a>
+                                        <form class="d-inline" method="post" action="{% url 'delete_time_log' task.id time_log.id %}" onsubmit="confirmDelete(event, 'time_log');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="text-danger p-0 border-0 bg-transparent">Delete</button>
+                                        </form>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-danger">No time logs available.</p>
+                    {% endif %}
+                    <a href="{% url 'add_time_log' task.id %}">Add New Time Log</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
